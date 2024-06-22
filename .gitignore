@@ -1,0 +1,22 @@
+# Pythonのバイトコード
+__pycache__/
+*.pyc
+
+# バーチャル環境
+venv/
+.env/
+
+# OSが生成するファイル
+.DS_Store
+Thumbs.db
+
+# 開発ツールの設定ファイル
+.idea/
+.vscode/
+
+# ログファイル
+*.log
+
+temp/        # tempディレクトリ全体を無視
+config.ini   # 特定のファイル名を無視
+build/*.o    # buildディレクトリ内の.oで終わるファイルを無視
