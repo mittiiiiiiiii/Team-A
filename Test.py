@@ -4,6 +4,7 @@ import random                   #乱数を生成するためのライブラリ�
 #ゲームの状態を初期化または更新
 if 'position' not in st.session_state:  #セッション状態にプレイヤーの位置がない場合
     st.session_state.position=0         #プレイヤーの初期位置を0に設定
+    st.session_state.count=0            #サイコロを振った回数を0に設定
 if 'game_over' not in st.session_state: #セッション状態にゲーム終了フラグがない場合
     st.session_state.game_over=False    #ゲーム終了フラグをFalseに設定
 
@@ -11,10 +12,11 @@ def roll_dice():    #サイコロを振るアクション
     if not st.session_state.game_over:                  #ゲームが終了していない場合
         roll=random.randint(1,6)                        #1から6の間でランダムな数値を生成
         st.session_state.position+=roll               #プレイヤーの位置を更新
+        st.session_state.count+=1                     #サイコロを振った回数を更新
 
         if st.session_state.position>=28:             #外周のマス数を超えた場合
             st.session_state.game_over=True           #ゲーム終了フラグをTrueに設定
-            st.success('一周してゴールに到達しました！おめでとうございます！')  #成功メッセージを表示
+            st.success(f'一周してゴールに到達しました！おめでとうございます！ サイコロを振った回数は {st.session_state.count} です。')  #成功メッセージを表示
         else:
             st.info(f'サイコロの目は {roll} です。現在の位置は {st.session_state.position} です。')  #現在の位置とサイコロの目を表示
 
@@ -23,8 +25,8 @@ def get_display_board_style():#ゲームボードのスタイルを定義
     <style>
         .board{
             display: grid;
-            grid-template-columns: repeat(10,50px);
-            grid-template-rows: repeat(7,50px);
+            grid-template-columns: repeat(10, 50px);
+            grid-template-rows: repeat(7, 50px);
             gap: 5px;
         }
 
@@ -45,23 +47,49 @@ def get_display_board_style():#ゲームボードのスタイルを定義
             border: none;
             background-color: white;
         }
+
+        .even{
+            background-color: yellow;
+        }
+
+        .test{
+            background-color: red;
+        }
     </style>
     """
 
 #ゲームボードの表示
 def display_board():
-    board_html=get_display_board_style()#スタイルを呼び出し
+    board_html=get_display_board_style()    #スタイルを呼び出し
     board_html+="<div class='board'>"  #ゲームボードの開始
-    outer_positions=list(range(10))+list(range(19,60,10))+list(range(69,59,-1))+list(range(50,1,-10))#外周のマスを計算
+    outer_positions=list(range(10))+list(range(19,60,10))+list(range(69,59,-1))+list(range(50,1,-10))   #外周のマスを計算
+    k=0
+    t=False
 
     for i in range(70):  #7x10のグリッドでループ
         if i in outer_positions:  #外周のマスの場合
-            if outer_positions.index(i)==st.session_state.position:  #プレイヤーの位置の場合
+            if outer_positions.index(i)==st.session_state.position and not st.session_state.game_over:  #プレイヤーの位置の場合
                 board_html+="<div class='cell player'>P</div>"  #プレイヤーを表示
+                if i==10 or i==20 or i==30 or i==40 or i==50 or i==60:
+                    t=True
+                if i==19 or i==39 or i==59:
+                    k+=1
             else:
-                board_html+="<div class='cell'></div>"  #通常のマスを表示
+                if i%2==0:
+                    if i%10==0:
+                        board_html+="<div class='cell test'></div>"
+                    else:
+                        board_html+="<div class='cell even'></div>"  #偶数のマスを黄色で表示
+                elif i%(19+20*k)==0:
+                    board_html+="<div class='cell even'></div>"
+                    k+=1
+                else:
+                    board_html+="<div class='cell'></div>"  #通常のマスを表示
         else:
             board_html+="<div class='cell empty'></div>"  #使用しないマスを表示
+    if t:
+        print("test")
+        t=False
 
     board_html+="</div>"  #ゲームボードの終了
     st.markdown(board_html,unsafe_allow_html=True)  #ゲームボードを表示
@@ -75,5 +103,6 @@ if st.button('ゲームをリセット'):          #ゲームをリセットす�
     st.session_state.position=0         #プレイヤーの位置を0にリセット
     st.session_state.game_over=False    #ゲーム終了フラグをFalseにリセット
     st.session_state.laps=0             #周回数を0にリセット
+    st.session_state.count=0            #サイコロを振った回数を0にリセット
 
     st.rerun() #ページをプログラム的に再実行して、リセットを即座に反映
