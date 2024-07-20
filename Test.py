@@ -100,7 +100,7 @@ def display_board():
             board_html += "<div class='cell empty'></div>"  # 使用しないマスを表示
     if t:
         t = False
-        k=3
+        k=5
         send(k)
 
     board_html += "</div>"  # ゲームボードの終了
@@ -141,6 +141,12 @@ def load_data():
         llm = OpenAI(model="gpt-4", temperature=0.0, system_prompt="あなたは、日本語が達者であり、必ず日本語で質問い回答する。カードの枚数勝ち負けゲームの専門家です。")
         index = VectorStoreIndex.from_documents(docs)
         return index
+    
+def judge_win_or_lose(response_text):
+    if "勝ち" in response_text or "勝ち" in response_text:
+        return "勝ち"
+    elif "負け" in response_text:
+        return "負け"
 
 index = load_data()
  
@@ -161,3 +167,8 @@ if st.session_state.messages[-1]["role"] != "assistant":
             
             message = {"role": "assistant", "content": response.response}
             st.session_state.messages.append(message)
+
+            result = judge_win_or_lose(message)  # 勝ち、負けを判定
+            st.write(f"判定結果: {result}")
+
+            print("メッセージ:", message)
